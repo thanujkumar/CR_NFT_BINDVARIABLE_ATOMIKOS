@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd" >
+
+    <import resource="classpath:*-config.xml"/>
+  
+
+
+	<bean id="targetDataSource" class="oracle.ucp.jdbc.PoolDataSourceFactory"
+		factory-method="getPoolDataSource">
+		<property name="connectionPoolName" value="TEST-UCP" />
+		<property name="description" value="Testing UCP settings" />
+		<property name="connectionFactoryClassName" value="oracle.jdbc.pool.OracleDataSource" />
+		<property name="minPoolSize" value="10" />
+		<property name="maxPoolSize" value="50" />
+		<property name="initialPoolSize" value="5" />
+		<property name="timeToLiveConnectionTimeout" value="10" />
+		<property name="validateConnectionOnBorrow"
+			value="true" />
+		<property name="maxConnectionReuseTime" value="3600" /> <!-- in seconds -->
+		<property name="inactiveConnectionTimeout" value="900" /> <!-- in seconds -->
+		<property name="ONSConfiguration" value="" /> <!-- TODO -->
+		<property name="fastConnectionFailoverEnabled"
+			value="false" />
+		<property name="connectionProperties">
+			<props>
+				<prop key="oracle.jdbc.ReadTimeout">90000</prop> <!-- in millis -->
+				<prop key="DMSStatementMetrics">true</prop>
+				<prop key="oracle.jdbc.DMSStatementMetrics">true</prop>
+				<prop key="defaultRowPrefetch">100</prop>
+				<prop key="defaultBatchValue">100</prop>
+			</props>
+		</property>
+		<property name="connectionFactoryProperties">
+			<props>
+				<prop key="user">appdata</prop>
+				<prop key="password">app</prop>
+				<prop key="URL">jdbc:oracle:thin:@localhost:1521/orcl</prop>
+				<prop key="loginTimeout">0</prop>
+			</props>
+		</property>
+	</bean>
+
+
+  
+    <bean id="oracleEndToEndMetricDataSourceWrapper"
+		class="com.edb.finance.common.spring.datasource.OracleEndToEndMetricDataSourceWrapper">
+		<property name="active" value="true" />
+		<property name="targetDataSource" ref="targetDataSource" />
+        <property name="contextResolverBeanName" value="endToEndMetricsContextResolver" />
+	</bean>
+    
+    <bean id="melodyDataSourceWrapper" class="net.bull.javamelody.SpringDataSourceFactoryBean">
+        <property name="targetName" value="oracleEndToEndMetricDataSourceWrapper" />
+    </bean>
+    
+
+	<bean id="dataSourceTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="targetDataSource" />
+	</bean>
+
+	<tx:annotation-driven transaction-manager="dataSourceTransactionManager" />
+	
+	<!-- -JMX for monitoring -->
+
+	<bean id="mbeanServer"
+		class="org.springframework.jmx.support.MBeanServerFactoryBean">
+		<property name="locateExistingServerIfPossible" value="true"></property>
+	</bean>
+
+	<bean id="exporter"
+		class="org.springframework.jmx.export.annotation.AnnotationMBeanExporter"
+		lazy-init="false">
+		<property name="defaultDomain" value="IAG" />
+		<property name="server" ref="mbeanServer" />
+	</bean>
+
+    <!--  exports UCP connection settings -->
+	<bean class="com.edb.finance.common.spring.jmx.ucp.UcpMbeanExporter" />
+
+</beans>

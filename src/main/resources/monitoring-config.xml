@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:metrics="http://www.ryantenney.com/schema/metrics"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.ryantenney.com/schema/metrics http://www.ryantenney.com/schema/metrics/metrics-3.0.xsd">
+
+    <metrics:metric-registry id="metricsRegistry" />
+    
+    <metrics:health-check-registry id="healthCheckRegistry" />
+    
+    <metrics:annotation-driven metric-registry="metricsRegistry" health-check-registry="healthCheckRegistry" />
+
+    <!-- Report to console if not set evry 2 seconds -->
+    <metrics:reporter type="slf4j" metric-registry="metricsRegistry" enabled="true" period="500" level="INFO" />
+
+    <metrics:reporter  type="jmx" metric-registry="metricsRegistry" enabled="true" />
+
+    <metrics:reporter  type="graphite" metric-registry="metricsRegistry" enabled="true" period="1000" host="localhost" port="2003" prefix="ORACLE_UCP" />
+
+
+    <bean name="threadDeadlockHealthCheck" class="com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck" />
+    
+    <!-- use camel-metrics route policy to gather metrics for all routes -->
+    <!--  bean id="metricsRoutePolicyFactory" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory">
+        <property name="metricsRegistry" ref="metricsRegistry" />
+        <property name="prettyPrint" value="true" />
+    </bean -->
+
+    <!--  bean class="com.netflix.hystrix.contrib.codahalemetricspublisher.HystrixCodaHaleMetricsPublisher">
+        <description>
+            Register hystrix metrics.
+        </description>
+        <constructor-arg ref="metricsRegistry" />
+    </bean -->
+
+</beans>

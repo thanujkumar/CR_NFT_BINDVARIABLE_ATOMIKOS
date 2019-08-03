@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+
+	<bean id="ledgerDataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean"
+		destroy-method="close" init-method="init">
+		<property name="uniqueResourceName">
+			<value>LEDSYS</value>
+		</property>
+		<property name="xaDataSourceClassName" value="oracle.jdbc.xa.client.OracleXADataSource" />
+		<property name="xaProperties">
+			<props>
+				<prop key="user">crledgerv2</prop>
+				<prop key="password">crledgerv2</prop>
+				<prop key="URL">jdbc:oracle:thin:@localhost:1521/orcl</prop>
+			</props>
+		</property>
+		<property name="loginTimeout" value="60000" />
+		<property name="minPoolSize" value="20" />
+		<property name="maxPoolSize" value="200" />
+		<property name="borrowConnectionTimeout" value="30" />
+		<property name="testQuery" value="SELECT 1 from DUAL" />
+		<property name="maintenanceInterval" value="60" />
+		<property name="maxIdleTime" value="60" />
+		<property name="maxLifetime" value="60" />
+		<property name="reapTimeout" value="600"></property>
+	</bean>
+
+
+
+	<bean id="ledgerEntityManagerFactory" name="ledgermodel"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="ledgerDataSource" /> <!-- ledgerMetricsdataSource -->
+		<property name="persistenceUnitName" value="testmodel" />
+		<property name="persistenceXmlLocation" value="classpath:META-INF/test-persistence.xml" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="generateDdl" value="false" />
+				<property name="showSql" value="true" />
+				<property name="database">
+					<util:constant static-field="org.springframework.orm.jpa.vendor.Database.ORACLE" />
+				</property>
+				<property name="databasePlatform" value="org.hibernate.dialect.Oracle12cDialect" />
+			</bean>
+		</property>
+		<property name="jpaProperties">
+			<props>
+
+				<!-- <prop key="hibernate.cache.region.factory_class">net.sf.ehcache.hibernate.EhCacheRegionFactory</prop> 
+					<prop key="hibernate.cache.region.factory_class">net.sf.ehcache.hibernate.SingletonEhCacheRegionFactory</prop> 
+					<prop key="hibernate.cache.use_query_cache">${hibernate.cache.use_query_cache}</prop> 
+					<prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop> 
+					<prop key="hibernate.cache.use_structured_entries">${hibernate.cache.use_structured_entries}</prop> -->
+
+				<prop key="hibernate.current_session_context_class">jta</prop>
+				<!-- <prop key="hibernate.transaction.manager_lookup_class">com.atomikos.icatch.jta.hibernate3.TransactionManagerLookup 
+					</prop> -->
+				<prop key="hibernate.jdbc.factory_class">net.bull.javamelody.HibernateBatcherFactory</prop>
+				<prop key="javax.persistence.validation.group.pre-persist">javax.validation.groups.Default</prop>
+				<prop key="javax.persistence.validation.group.pre-update">javax.validation.groups.Default</prop>
+				<prop key="javax.persistence.validation.group.pre-remove">javax.validation.groups.Default</prop>
+				<prop key="hibernate.generate_statistics">true</prop>
+				<prop key="hibernate.jdbc.use_get_generated_keys">true</prop>
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+				<prop key="hibernate.jdbc.batch_size">15</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.id.new_generator_mappings">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.use_sql_comments">true</prop>
+				<prop key="hibernate.temp.use_jdbc_metadata_defaults">false</prop>
+				<prop key="hibernate.transaction.jta.platform">config.AtomikosJtaPlatform</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="JtaTransactionManager"
+		class="org.springframework.transaction.jta.JtaTransactionManager"
+		depends-on="userTransactionService">
+		<property name="transactionManager" ref="AtomikosTransactionManager" />
+		<property name="userTransaction" ref="AtomikosUserTransaction" />
+	</bean>
+	
+
+</beans>
