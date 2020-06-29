@@ -24,7 +24,7 @@
 		<jcloverslf4j.version>1.7.19</jcloverslf4j.version>
 		<hibernate.version>5.2.4.Final</hibernate.version>
 		<hibernate.jpa.version>1.0.0.Final</hibernate.jpa.version>
-		<hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
+		<hibernate.validator.version>6.1.5.Final</hibernate.validator.version>
 		<dropwizard.version>3.2.5</dropwizard.version>
 		<javamelody.core.version>1.70.0</javamelody.core.version>
 		<surefire.version>2.20</surefire.version>
