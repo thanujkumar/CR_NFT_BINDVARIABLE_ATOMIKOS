@@ -20,7 +20,7 @@
 		<hibernate.version>5.1.0.Final</hibernate.version>
 		<atomikos.version>4.0.3</atomikos.version>
 		<oracle.driver.version>19.6.0.0</oracle.driver.version>
-		<logback.version>1.1.2</logback.version>
+		<logback.version>1.2.0</logback.version>
 		<jcloverslf4j.version>1.7.19</jcloverslf4j.version>
 		<hibernate.version>5.2.4.Final</hibernate.version>
 		<hibernate.jpa.version>1.0.0.Final</hibernate.jpa.version>
